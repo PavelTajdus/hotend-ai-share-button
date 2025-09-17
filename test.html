@@ -1,6 +1,253 @@
-<!-- AI Share Button pro Hotend.cz - Kompletní kód pro eshop -->
-
-<style>
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test produktu - Bambu Lab A1 mini :: Hotend.cz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .product-detail {
+            margin-bottom: 30px;
+        }
+        .product-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .product-price {
+            font-size: 24px;
+            color: #dc2626;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .product-description {
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .product-specs {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .spec-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .spec-item:last-child {
+            border-bottom: none;
+        }
+        .add-to-cart {
+            background: #dc2626;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .test-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 2000;
+        }
+        .test-controls h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .test-controls button {
+            display: block;
+            width: 100%;
+            margin-bottom: 5px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .test-controls button:hover {
+            background: #f0f0f0;
+        }
+        .mobile-sim {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+        .desktop-sim {
+            background: #f3e5f5;
+            border-left: 4px solid #9c27b0;
+        }
+        .config-override {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="product-detail">
+            <h1 class="product-title">Bambu Lab A1 mini - Kompaktní 3D tiskárna</h1>
+            <div class="product-price">12 990 Kč</div>
+            
+            <div class="product-description">
+                Bambu Lab A1 mini je kompaktní a dostupná 3D tiskárna, která nabízí profesionální kvalitu tisku 
+                v malém balení. Ideální pro začátečníky i pokročilé uživatele, kteří hledají spolehlivou 
+                a snadno ovladatelnou tiskárnu.
+            </div>
+            
+            <div class="product-specs">
+                <h3>Technické specifikace</h3>
+                <div class="spec-item">
+                    <span>Tisková oblast:</span>
+                    <span>180 × 180 × 180 mm</span>
+                </div>
+                <div class="spec-item">
+                    <span>Přesnost tisku:</span>
+                    <span>±0.1 mm</span>
+                </div>
+                <div class="spec-item">
+                    <span>Podporované materiály:</span>
+                    <span>PLA, PETG, ABS, TPU</span>
+                </div>
+                <div class="spec-item">
+                    <span>Připojení:</span>
+                    <span>Wi-Fi, USB-C</span>
+                </div>
+                <div class="spec-item">
+                    <span>Váha:</span>
+                    <span>5.5 kg</span>
+                </div>
+            </div>
+            
+            <button class="add-to-cart">Přidat do košíku</button>
+        </div>
+    </div>
+    
+    <div class="test-controls">
+        <h3>Test Controls</h3>
+        <button onclick="simulateMobile()" class="mobile-sim">Simulate Mobile</button>
+        <button onclick="simulateDesktop()" class="desktop-sim">Simulate Desktop</button>
+        <button onclick="toggleWebShare()" class="config-override">Toggle Web Share</button>
+        <button onclick="toggleMobileFlow()" class="config-override">Toggle Mobile Flow</button>
+        <button onclick="showConfig()">Show Config</button>
+        <button onclick="testShare()">Test Share Function</button>
+    </div>
+    
+    <!-- Include the AI Share Button -->
+    <!-- Include new modules -->
+    <script src="assistants.js"></script>
+    <script src="shareFlow.js"></script>
+    
+    <script>
+    // Test functions
+    function simulateMobile() {
+        // Override user agent
+        Object.defineProperty(navigator, 'userAgent', {
+            get: () => 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15'
+        });
+        
+        // Add touch points
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            get: () => 5
+        });
+        
+        console.log('Simulating mobile device');
+        alert('Mobile simulation activated. Reload page to test.');
+    }
+    
+    function simulateDesktop() {
+        Object.defineProperty(navigator, 'userAgent', {
+            get: () => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        });
+        
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            get: () => 0
+        });
+        
+        console.log('Simulating desktop device');
+        alert('Desktop simulation activated. Reload page to test.');
+    }
+    
+    function toggleWebShare() {
+        if (window.shareFlow) {
+            const hasShare = 'share' in navigator;
+            if (hasShare) {
+                delete navigator.share;
+                console.log('Web Share API disabled');
+                alert('Web Share API disabled for testing');
+            } else {
+                navigator.share = async (data) => {
+                    console.log('Mock Web Share API called with:', data);
+                    return Promise.resolve();
+                };
+                console.log('Web Share API enabled (mock)');
+                alert('Web Share API enabled (mock) for testing');
+            }
+        }
+    }
+    
+    function toggleMobileFlow() {
+        if (window.shareFlow) {
+            const current = window.shareFlow.CONFIG.MOBILE_SHARE_FLOW;
+            window.shareFlow.updateConfig({ MOBILE_SHARE_FLOW: !current });
+            console.log('Mobile flow toggled to:', !current);
+            alert(`Mobile flow ${!current ? 'enabled' : 'disabled'}`);
+        }
+    }
+    
+    function showConfig() {
+        if (window.shareFlow) {
+            console.log('Current config:', window.shareFlow.CONFIG);
+            alert('Config logged to console');
+        }
+    }
+    
+    function testShare() {
+        if (window.handleAiShare) {
+            window.handleAiShare('perplexity');
+        } else {
+            alert('Share function not available yet');
+        }
+    }
+    
+    // Mock analytics for testing
+    window.gtag = function(event, name, data) {
+        console.log('GA4 Event:', event, name, data);
+    };
+    
+    window.dataLayer = [];
+    window.dataLayer.push = function(data) {
+        console.log('GTM DataLayer:', data);
+    };
+    </script>
+    
+    <!-- Original AI Share Button code -->
+    <style>
     /* AI Share Button Styling */
     .ai-share-container {
         position: fixed;
@@ -340,10 +587,6 @@
 <!-- Success message -->
 <div class="ai-success-message" id="aiSuccessMessage"></div>
 
-<!-- Include new modules -->
-<script src="assistants.js"></script>
-<script src="shareFlow.js"></script>
-
 <script>
 (function() {
     'use strict';
@@ -465,12 +708,6 @@
             console.log('AI Share Debug - URL:', url);
             console.log('AI Share Debug - Title:', title);
             console.log('AI Share Debug - Location:', window.location);
-            
-            // Fallback pro testovací prostředí
-            if (url.includes('about:') || url.includes('srcdoc')) {
-                console.warn('AI Share: Detekováno testovací prostředí, používám fallback hodnoty');
-                // V produkčním prostředí tohle nebude potřeba
-            }
             
             // Extrakce hlavního obsahu - přizpůsobeno pro Upgates eshop
             const contentSelectors = [
@@ -843,3 +1080,6 @@ Zdroj: ${url} (Hotend.cz - specialista na 3D tiskárny a filamenty)`;
 
 })();
 </script>
+
+</body>
+</html>
