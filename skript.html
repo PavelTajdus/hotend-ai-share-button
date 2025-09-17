@@ -545,9 +545,6 @@ Zdroj: ${url} (Hotend.cz - specialista na 3D tiskárny a filamenty)`;
                 const trimmed = trimForUrl(content, 1800);
                 const encodedContent = encodeURIComponent(trimmed);
 
-                // Pre-open okno synchronně kvůli Safari; pokud se blokne, newWin bude null
-                const newWin = window.open('about:blank', '_blank', 'noopener');
-
                 // Zkusit kopírovat vždy (fallback když provider nepřevezme dotaz)
                 tryCopy(content);
 
@@ -562,22 +559,26 @@ Zdroj: ${url} (Hotend.cz - specialista na 3D tiskárny a filamenty)`;
 
                 if (!urls[platform]) return;
 
+                // Přímé otevření s detekcí blokace
+                const newWin = window.open(urls[platform], '_blank', 'noopener,noreferrer');
+
+                // Detekce zablokovaného popup okna
+                setTimeout(() => {
+                    try {
+                        if (!newWin || newWin.closed || !newWin.location || newWin.location.href === 'about:blank') {
+                            this.showSuccess('Okno bylo zablokováno. Obsah je ve schránce - otevřete AI ručně a vložte (Ctrl+V / ⌘+V)');
+                            return;
+                        }
+                    } catch (e) {
+                        // Cross-origin error znamená že okno se otevřelo správně
+                    }
+                }, 100);
+
                 if (platform === 'gemini') {
                     // Gemini nepřebírá dotaz z URL – spolehni se na schránku
-                    if (newWin) {
-                        newWin.location.replace(urls[platform]);
-                        this.showSuccess('Otevřeno v Gemini – obsah je ve schránce (vložit Ctrl+V / ⌘+V)');
-                    } else {
-                        this.showSuccess('Okno bylo zablokováno. Povolte vyskakovací okna a zkuste znovu.');
-                    }
+                    this.showSuccess('Otevřeno v Gemini – obsah je ve schránce (vložit Ctrl+V / ⌘+V)');
                 } else {
-                    if (newWin) {
-                        newWin.location.replace(urls[platform]);
-                        this.showSuccess(`Otevírám v ${platform.charAt(0).toUpperCase() + platform.slice(1)}…`);
-                    } else {
-                        // Fallback když popup zablokován
-                        this.showSuccess('Okno bylo zablokováno. Povolte vyskakovací okna a zkuste znovu.');
-                    }
+                    this.showSuccess(`Otevírám v ${platform.charAt(0).toUpperCase() + platform.slice(1)}… (obsah je také ve schránce)`);
                 }
 
                 this.closeDropdown();
