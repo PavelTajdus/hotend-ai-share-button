@@ -1,4 +1,4 @@
-# Hotend AI Share Button
+# Hotend.cz AI Share Button
 
 Tlačítko "Kopírovat pro AI" pro produktové stránky e-shopu. Umožňuje zákazníkům jedním klikem sdílet informace o produktech s různými AI asistenty.
 
