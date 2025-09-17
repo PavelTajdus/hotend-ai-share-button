@@ -1,0 +1,637 @@
+<!-- AI Share Button pro Hotend.cz - Kompletní kód pro eshop -->
+
+<style>
+    /* AI Share Button Styling */
+    .ai-share-container {
+        position: fixed;
+        bottom: 30px;
+        left: 30px;
+        z-index: 1000;
+    }
+
+    .ai-share-btn {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 3px 12px rgba(220, 38, 38, 0.3);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .ai-share-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 18px rgba(220, 38, 38, 0.4);
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .ai-icon {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+    }
+
+    /* Dropdown menu */
+    .ai-dropdown {
+        position: absolute;
+        bottom: 50px;
+        left: 0;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        min-width: 280px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+    }
+
+    .ai-dropdown.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .ai-dropdown-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .ai-dropdown-subtext {
+        padding: 15px 20px;
+        font-size: 12px;
+        color: #666;
+        border-bottom: 1px solid #eee;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .ai-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        cursor: pointer;
+        transition: background 0.2s;
+        border: none;
+        border-left: 3px solid transparent;
+        width: 100%;
+        text-align: left;
+        background: none;
+        font-size: 14px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .ai-option:hover {
+        background: #f8fafc;
+    }
+
+    .ai-option.chatgpt-option {
+        border-left-color: #374151;
+    }
+
+    .ai-option.claude-option {
+        border-left-color: #d97706;
+    }
+
+    .ai-option.gemini-option {
+        border-left-color: #4285f4;
+    }
+
+    .ai-option.copilot-option {
+        border-left-color: #0078d4;
+    }
+
+    .ai-option.perplexity-option {
+        border-left-color: #14b8a6;
+    }
+
+    .ai-option.copy-option {
+        border-left-color: #0891b2;
+    }
+
+    .ai-option:last-child {
+        border-radius: 0 0 8px 8px;
+    }
+
+    .ai-option-icon {
+        width: 20px;
+        height: 20px;
+        padding: 4px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .ai-option-text {
+        flex: 1;
+    }
+
+    .ai-option-label {
+        font-weight: 500;
+        color: #333;
+    }
+
+    .ai-option-desc {
+        font-size: 12px;
+        color: #666;
+        margin-top: 2px;
+    }
+
+    /* Success message */
+    .ai-success-message {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: #059669;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        z-index: 1001;
+        opacity: 0;
+        transform: translateX(-100px);
+        transition: all 0.3s ease;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .ai-success-message.show {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .ai-share-container {
+            bottom: 20px;
+            left: 20px;
+        }
+        
+        .ai-dropdown {
+            min-width: 260px;
+            left: -10px;
+        }
+        
+        .ai-success-message {
+            left: 20px;
+            right: 20px;
+            transform: translateY(-50px);
+        }
+        
+        .ai-success-message.show {
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<!-- AI Share Button HTML -->
+<div class="ai-share-container" id="aiShareContainer" style="display: none;">
+    <button class="ai-share-btn" id="aiShareBtn">
+        <svg class="ai-icon" viewBox="0 0 24 24">
+            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-1 16H9V7h9v14z"/>
+            <path d="M19 13l-4-4v3h-4v2h4v3l4-4z"/>
+        </svg>
+        Kopírovat pro AI
+    </button>
+
+    <div class="ai-dropdown" id="aiDropdown">
+        <div class="ai-dropdown-header">Kopírovat stránku do AI asistenta</div>
+        <div class="ai-dropdown-subtext">Popovídejte si o tomto produktu s vaším oblíbeným AI asistentem</div>
+        
+        <button class="ai-option chatgpt-option" onclick="openInChatGPT()">
+            <div class="ai-option-icon chatgpt-icon">💬</div>
+            <div class="ai-option-text">
+                <div class="ai-option-label">Otevřít v ChatGPT</div>
+                <div class="ai-option-desc">Proberte tento produkt s AI od OpenAI</div>
+            </div>
+        </button>
+
+        <button class="ai-option claude-option" onclick="openInClaude()">
+            <div class="ai-option-icon claude-icon">🤖</div>
+            <div class="ai-option-text">
+                <div class="ai-option-label">Otevřít v Claude</div>
+                <div class="ai-option-desc">Proberte tento produkt s AI od Anthropic</div>
+            </div>
+        </button>
+
+        <button class="ai-option gemini-option" onclick="openInGemini()">
+            <div class="ai-option-icon gemini-icon">✨</div>
+            <div class="ai-option-text">
+                <div class="ai-option-label">Otevřít v Gemini</div>
+                <div class="ai-option-desc">Text se zkopíruje - vložte do chatu (Ctrl+V / ⌘+V)</div>
+            </div>
+        </button>
+
+        <button class="ai-option copilot-option" onclick="openInCopilot()">
+            <div class="ai-option-icon copilot-icon">🚁</div>
+            <div class="ai-option-text">
+                <div class="ai-option-label">Otevřít v Copilot</div>
+                <div class="ai-option-desc">Proberte tento produkt s AI od Microsoft</div>
+            </div>
+        </button>
+
+        <button class="ai-option perplexity-option" onclick="openInPerplexity()">
+            <div class="ai-option-icon perplexity-icon">🔍</div>
+            <div class="ai-option-text">
+                <div class="ai-option-label">Otevřít v Perplexity</div>
+                <div class="ai-option-desc">Proberte tento produkt s vyhledávací AI</div>
+            </div>
+        </button>
+
+        <button class="ai-option copy-option" onclick="copyToClipboard()">
+            <div class="ai-option-icon copy-icon">📋</div>
+            <div class="ai-option-text">
+                <div class="ai-option-label">Zkopírovat stránku</div>
+                <div class="ai-option-desc">Zkopíruje informace do schránky</div>
+            </div>
+        </button>
+    </div>
+</div>
+
+<!-- Success message -->
+<div class="ai-success-message" id="aiSuccessMessage"></div>
+
+<script>
+(function() {
+    'use strict';
+    
+    // Kontrola, zda již není načtený (prevence duplicity)
+    if (window.HotendAIShareButton) {
+        return;
+    }
+    
+    window.HotendAIShareButton = true;
+
+    class AIShareButton {
+        constructor() {
+            this.btn = document.getElementById('aiShareBtn');
+            this.dropdown = document.getElementById('aiDropdown');
+            this.successMessage = document.getElementById('aiSuccessMessage');
+            this.container = document.getElementById('aiShareContainer');
+            
+            if (this.init()) {
+                this.showButton();
+            }
+        }
+
+        init() {
+            // Bezpečná kontrola existence elementů
+            if (!this.btn || !this.dropdown || !this.successMessage || !this.container) {
+                console.warn('AI Share Button: Chybí některé HTML elementy');
+                return false;
+            }
+
+            this.btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleDropdown();
+                this.trackEvent('button_click', 'main_button');
+            });
+
+            document.addEventListener('click', () => {
+                this.closeDropdown();
+            });
+
+            this.dropdown.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            
+            return true;
+        }
+
+        showButton() {
+            if (this.container) {
+                this.container.style.display = 'block';
+            }
+        }
+
+        toggleDropdown() {
+            this.dropdown.classList.toggle('active');
+        }
+
+        closeDropdown() {
+            this.dropdown.classList.remove('active');
+        }
+
+        extractPageContent() {
+            // Získání správné URL a názvu
+            const url = window.location.href;
+            let title = document.title;
+            
+            // Debug informace pro testování
+            console.log('AI Share Debug - URL:', url);
+            console.log('AI Share Debug - Title:', title);
+            console.log('AI Share Debug - Location:', window.location);
+            
+            // Fallback pro testovací prostředí
+            if (url.includes('about:') || url.includes('srcdoc')) {
+                console.warn('AI Share: Detekováno testovací prostředí, používám fallback hodnoty');
+                // V produkčním prostředí tohle nebude potřeba
+            }
+            
+            // Extrakce hlavního obsahu - přizpůsobeno pro Upgates eshop
+            const contentSelectors = [
+                'main',
+                '.content',
+                'article',
+                '.post',
+                '.entry-content',
+                '#content',
+                '.main-content',
+                '.product-detail',
+                '.product-content',
+                '[itemscope]'
+            ];
+            
+            let content = '';
+            for (let selector of contentSelectors) {
+                const element = document.querySelector(selector);
+                if (element) {
+                    content = this.cleanText(element.innerText);
+                    break;
+                }
+            }
+            
+            // Pokud nenajdeme specifický kontejner, použijeme body
+            if (!content) {
+                const bodyText = document.body.innerText;
+                content = this.cleanText(this.filterUnwantedContent(bodyText));
+            }
+
+            // Předformátování specificky pro produktové stránky
+            const isProduct = window.location.pathname.includes('/p/');
+            
+            // Debug info
+            console.log('AI Share Debug - Is product page:', isProduct);
+            console.log('AI Share Debug - Pathname:', window.location.pathname);
+            
+            const prompt = isProduct ? this.createProductPrompt(title, url, content) : this.createGeneralPrompt(title, url, content);
+
+            return prompt;
+        }
+
+        createProductPrompt(title, url, content) {
+            // Vyčistíme title od " :: Hotend.cz"
+            const cleanTitle = title.replace(' :: Hotend.cz', '').trim();
+            
+            return `Analyzuj prosím tento produkt z českého e-shopu Hotend.cz:
+
+📦 PRODUKT: ${cleanTitle}
+🔗 URL: ${url}
+
+📋 POPIS A SPECIFIKACE:
+${content}
+
+ℹ️ O PRODEJCI:
+Hotend.cz je český specialista na 3D tiskárny značek Bambulab a Voron, kvalitní filamenty pro 3D tisk a poskytuje profesionální poradenství v oblasti 3D tisku.
+
+🔗 Zdroj informací: ${url}`;
+        }
+
+        createGeneralPrompt(title, url, content) {
+            return `Analyzuj prosím obsah této webové stránky:
+
+Název: ${title}
+URL: ${url}
+
+Obsah:
+${content}
+
+Zdroj: ${url} (Hotend.cz - specialista na 3D tiskárny a filamenty)`;
+        }
+
+        filterUnwantedContent(text) {
+            const unwantedPatterns = [
+                // Navigační prvky
+                /.*?(menu|navigace|navigation|další|přidat do|do košíku).*?\n/gi,
+                // E-shop prvky
+                /.*?(košík|cart|nákupní košík|skladem|ks na skladě).*?\n/gi,
+                // Uživatelské prvky  
+                /.*?(přihlášení|login|registrace|oblíbené|porovnání).*?\n/gi,
+                // Footer a ostatní
+                /.*?(footer|patička|doprava a platba).*?\n/gi,
+                /.*?(reklama|advertisement).*?\n/gi,
+                /.*?(cookie|soukrom.*?|gdpr).*?\n/gi,
+                // Kontaktní info
+                /\s*\+\s*\d+\s*\d+\s*\d+\s*\d+.*?\n/gi,
+                /\s*facebook\s*instagram.*?\n/gi,
+                // Cenové informace mimo hlavní cenu
+                /.*?bez DPH.*?\n/gi,
+                /.*?na objednávku.*?kontaktujte.*?\n/gi
+            ];
+            
+            let filteredText = text;
+            unwantedPatterns.forEach(pattern => {
+                filteredText = filteredText.replace(pattern, '');
+            });
+            
+            return filteredText;
+        }
+
+        cleanText(text) {
+            return text
+                .replace(/\s+/g, ' ')
+                .replace(/\n\s*\n/g, '\n')
+                .trim();
+        }
+
+        showSuccess(message) {
+            this.successMessage.textContent = message;
+            this.successMessage.classList.add('show');
+            
+            setTimeout(() => {
+                this.successMessage.classList.remove('show');
+            }, 3000);
+        }
+
+        trackEvent(action, label, platform = null) {
+            try {
+                // Google Analytics 4 event
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'ai_share_interaction', {
+                        'event_category': 'AI Tools',
+                        'event_label': label,
+                        'custom_action': action,
+                        'platform': platform,
+                        'product_url': window.location.href,
+                        'page_title': document.title
+                    });
+                }
+                
+                // GTM DataLayer push
+                if (typeof window.dataLayer !== 'undefined') {
+                    window.dataLayer.push({
+                        'event': 'ai_share_button',
+                        'action': action,
+                        'label': label,
+                        'platform': platform,
+                        'url': window.location.href
+                    });
+                }
+                
+                // Console log pro debug
+                console.log('AI Share Tracking:', { action, label, platform, url: window.location.href });
+                
+            } catch (error) {
+                console.warn('AI Share Button: Tracking error', error);
+            }
+        }
+
+        async copyToClipboard() {
+            try {
+                const content = this.extractPageContent();
+                await navigator.clipboard.writeText(content);
+                this.showSuccess('Obsah zkopírován do schránky!');
+                this.closeDropdown();
+                this.trackEvent('copy_success', 'clipboard');
+            } catch (err) {
+                console.error('Chyba při kopírování:', err);
+                this.showSuccess('Chyba při kopírování obsahu.');
+                this.trackEvent('copy_error', 'clipboard');
+            }
+        }
+
+        openInAI(platform) {
+            try {
+                const content = this.extractPageContent();
+                const encodedContent = encodeURIComponent(content);
+                
+                // Každá služba má jiný způsob předávání parametrů
+                const urls = {
+                    claude: `https://claude.ai/new?q=${encodedContent}`,
+                    chatgpt: `https://chatgpt.com/?q=${encodedContent}`,
+                    gemini: `https://gemini.google.com/app`,
+                    perplexity: `https://www.perplexity.ai/?q=${encodedContent}`,
+                    copilot: `https://copilot.microsoft.com/?q=${encodedContent}`
+                };
+                
+                if (urls[platform]) {
+                    // Speciální handling jen pro Gemini, který nepodporuje URL parametry
+                    if (platform === 'gemini') {
+                        // Otevři bez parametrů a zkopíruj obsah do schránky
+                        navigator.clipboard.writeText(content).then(() => {
+                            window.open(urls[platform], '_blank');
+                            this.showSuccess(`Otevřeno v Gemini - obsah zkopírován do schránky`);
+                        }).catch(() => {
+                            window.open(urls[platform], '_blank');
+                            this.showSuccess(`Otevřeno v Gemini - zkopírujte obsah ručně`);
+                        });
+                    } else {
+                        window.open(urls[platform], '_blank');
+                        this.showSuccess(`Otevírám v ${platform.charAt(0).toUpperCase() + platform.slice(1)}...`);
+                    }
+                    this.closeDropdown();
+                    this.trackEvent('ai_open', platform, platform);
+                }
+            } catch (error) {
+                console.error('Chyba při otevírání AI:', error);
+                this.showSuccess('Chyba při otevírání AI asistenta.');
+                this.trackEvent('ai_open_error', platform, platform);
+            }
+        }
+    }
+
+    function isProductPage() {
+        // Kontrola URL - pro Hotend.cz produkty mají /p/ v URL
+        if (window.location.pathname.includes('/p/')) {
+            return true;
+        }
+        
+        // Kontrola přítomnosti produktových elementů
+        const productIndicators = [
+            '[itemtype*="Product"]',
+            '.product-detail',
+            '.product-info',
+            '.product-price',
+            '.add-to-cart',
+            '.product-code',
+            '.buy-button'
+        ];
+        
+        try {
+            return productIndicators.some(selector => {
+                const element = document.querySelector(selector);
+                return element !== null;
+            });
+        } catch (error) {
+            console.warn('AI Share Button: Chyba při detekci produktové stránky:', error);
+            return false;
+        }
+    }
+
+    // Globální funkce pro tlačítka
+    let aiShareInstance;
+
+    window.copyToClipboard = function() {
+        if (aiShareInstance && aiShareInstance.copyToClipboard) {
+            aiShareInstance.copyToClipboard();
+        }
+    };
+
+    window.openInClaude = function() {
+        if (aiShareInstance && aiShareInstance.openInAI) {
+            aiShareInstance.openInAI('claude');
+        }
+    };
+
+    window.openInChatGPT = function() {
+        if (aiShareInstance && aiShareInstance.openInAI) {
+            aiShareInstance.openInAI('chatgpt');
+        }
+    };
+
+    window.openInGemini = function() {
+        if (aiShareInstance && aiShareInstance.openInAI) {
+            aiShareInstance.openInAI('gemini');
+        }
+    };
+
+    window.openInPerplexity = function() {
+        if (aiShareInstance && aiShareInstance.openInAI) {
+            aiShareInstance.openInAI('perplexity');
+        }
+    };
+
+    window.openInCopilot = function() {
+        if (aiShareInstance && aiShareInstance.openInAI) {
+            aiShareInstance.openInAI('copilot');
+        }
+    };
+
+    // Inicializace
+    function initAIShareButton() {
+        try {
+            if (isProductPage()) {
+                aiShareInstance = new AIShareButton();
+                console.log('AI Share Button: Úspěšně inicializováno na produktové stránce');
+            } else {
+                console.log('AI Share Button: Není produktová stránka, tlačítko se nezobrazí');
+            }
+        } catch (error) {
+            console.error('AI Share Button: Chyba při inicializaci:', error);
+        }
+    }
+
+    // Spustit po načtení DOM nebo okamžitě pokud je už načtený
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAIShareButton);
+    } else {
+        initAIShareButton();
+    }
+
+})();
+</script>
