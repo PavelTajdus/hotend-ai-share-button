@@ -276,6 +276,40 @@
     }
     
     window.HotendAIShareButton = true;
+    
+    // Fallback kopírování pro Safari / HTTP kontexty
+    function legacyCopy(text) {
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+        } catch (e) {}
+    }
+
+    function tryCopy(text) {
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).catch(() => legacyCopy(text));
+            } else {
+                legacyCopy(text);
+            }
+        } catch (e) {
+            legacyCopy(text);
+        }
+    }
+
+    function trimForUrl(text, maxLength) {
+        const MAX = typeof maxLength === 'number' ? maxLength : 1800;
+        if (typeof text !== 'string') return '';
+        return text.length > MAX ? (text.slice(0, MAX) + '…') : text;
+    }
 
     class AIShareButton {
         constructor() {
@@ -494,7 +528,7 @@ Zdroj: ${url} (Hotend.cz - specialista na 3D tiskárny a filamenty)`;
         async copyToClipboard() {
             try {
                 const content = this.extractPageContent();
-                await navigator.clipboard.writeText(content);
+                tryCopy(content);
                 this.showSuccess('Obsah zkopírován do schránky!');
                 this.closeDropdown();
                 this.trackEvent('copy_success', 'clipboard');
@@ -508,8 +542,15 @@ Zdroj: ${url} (Hotend.cz - specialista na 3D tiskárny a filamenty)`;
         openInAI(platform) {
             try {
                 const content = this.extractPageContent();
-                const encodedContent = encodeURIComponent(content);
-                
+                const trimmed = trimForUrl(content, 1800);
+                const encodedContent = encodeURIComponent(trimmed);
+
+                // Pre-open okno synchronně kvůli Safari; pokud se blokne, newWin bude null
+                const newWin = window.open('about:blank', '_blank', 'noopener');
+
+                // Zkusit kopírovat vždy (fallback když provider nepřevezme dotaz)
+                tryCopy(content);
+
                 // Každá služba má jiný způsob předávání parametrů
                 const urls = {
                     claude: `https://claude.ai/new?q=${encodedContent}`,
@@ -518,25 +559,29 @@ Zdroj: ${url} (Hotend.cz - specialista na 3D tiskárny a filamenty)`;
                     perplexity: `https://www.perplexity.ai/?q=${encodedContent}`,
                     copilot: `https://copilot.microsoft.com/?q=${encodedContent}`
                 };
-                
-                if (urls[platform]) {
-                    // Speciální handling jen pro Gemini, který nepodporuje URL parametry
-                    if (platform === 'gemini') {
-                        // Otevři bez parametrů a zkopíruj obsah do schránky
-                        navigator.clipboard.writeText(content).then(() => {
-                            window.open(urls[platform], '_blank');
-                            this.showSuccess(`Otevřeno v Gemini - obsah zkopírován do schránky`);
-                        }).catch(() => {
-                            window.open(urls[platform], '_blank');
-                            this.showSuccess(`Otevřeno v Gemini - zkopírujte obsah ručně`);
-                        });
+
+                if (!urls[platform]) return;
+
+                if (platform === 'gemini') {
+                    // Gemini nepřebírá dotaz z URL – spolehni se na schránku
+                    if (newWin) {
+                        newWin.location.replace(urls[platform]);
+                        this.showSuccess('Otevřeno v Gemini – obsah je ve schránce (vložit Ctrl+V / ⌘+V)');
                     } else {
-                        window.open(urls[platform], '_blank');
-                        this.showSuccess(`Otevírám v ${platform.charAt(0).toUpperCase() + platform.slice(1)}...`);
+                        this.showSuccess('Okno bylo zablokováno. Povolte vyskakovací okna a zkuste znovu.');
                     }
-                    this.closeDropdown();
-                    this.trackEvent('ai_open', platform, platform);
+                } else {
+                    if (newWin) {
+                        newWin.location.replace(urls[platform]);
+                        this.showSuccess(`Otevírám v ${platform.charAt(0).toUpperCase() + platform.slice(1)}…`);
+                    } else {
+                        // Fallback když popup zablokován
+                        this.showSuccess('Okno bylo zablokováno. Povolte vyskakovací okna a zkuste znovu.');
+                    }
                 }
+
+                this.closeDropdown();
+                this.trackEvent('ai_open', platform, platform);
             } catch (error) {
                 console.error('Chyba při otevírání AI:', error);
                 this.showSuccess('Chyba při otevírání AI asistenta.');
