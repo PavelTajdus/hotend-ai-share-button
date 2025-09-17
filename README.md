@@ -2,6 +2,8 @@
 
 Tlačítko "Kopírovat pro AI" pro produktové stránky e-shopu. Umožňuje zákazníkům jedním klikem sdílet informace o produktech s různými AI asistenty.
 
+**Ukázka v provozu:** https://www.hotend.cz/p/bambu-lab-h2s-combo-ams-2-pro
+
 ## Jak to funguje
 
 Widget přidá na produktové stránky plovoucí tlačítko, které po kliknutí zobrazí dropdown menu s volbami AI asistentů. Po výběru asistenta:
